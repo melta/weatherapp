@@ -5,4 +5,4 @@
 This is my first project. I hope it will work!
 """
 
-print("Hellow. I'm alive!")
+print("Hello world!")
