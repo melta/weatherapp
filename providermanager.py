@@ -1,4 +1,4 @@
-from providers import AccuWeatherProvider
+from providers import AccuWeatherProvider, RP5Provider
 
 
 class ProviderManager:
@@ -14,13 +14,13 @@ class ProviderManager:
         """ Loads all existing providers.
         """
 
-        for provider in [AccuWeatherProvider]:
-            self.add(provider)
+        for provider in [AccuWeatherProvider, RP5Provider]:
+            self.add(provider.name, provider)
 
-    def add(self, provider):
+    def add(self, name,  provider):
         """ Add provider.
         """
-        self._providers[provider().name] = provider
+        self._providers[name] = provider
 
     def get(self, name):
         """ Get provider by name.
@@ -28,8 +28,8 @@ class ProviderManager:
 
         return self._providers.get(name, None)
 
-    def __iter__(self):
-        return self._providers.items()
+    def __getitem__(self, name):
+        return self._providers[name]
 
     def __contains__(self, name):
         return name in self._providers
