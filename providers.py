@@ -14,16 +14,9 @@ from bs4 import BeautifulSoup
 import config
 
 
-class AccuWeatherProvider:
-
-    """ Weather provider for AccuWeather site.
+class WeatherProvider:
+    """ Base weather provider.
     """
-
-    name = config.ACCU_PROVIDER_NAME
-    title = config.ACCU_PROVIDER_TITLE
-
-    default_location = config.DEFAULT_ACCU_LOCATION_NAME
-    default_url = config.DEFAULT_ACCU_LOCATION_URL
 
     def __init__(self, app):
         self.app = app
@@ -40,6 +33,18 @@ class AccuWeatherProvider:
 
         return Path.home() / config.CONFIG_FILE
 
+    def get_default_location(self):
+        """ Default location name
+        """
+
+        raise NotImplementedError
+
+    def get_default_url(self):
+        """ Defalt location url
+        """
+
+        raise NotImplementedError
+
     def _get_configuration(self):
         """ Returns configured location name and url.
 
@@ -50,8 +55,8 @@ class AccuWeatherProvider:
         :rtype: tuple
         """
 
-        name = self.default_location
-        url = self.default_url
+        name = self.get_default_location()
+        url = self.get_default_url()
         configuration = configparser.ConfigParser()
 
         configuration.read(self.get_configuration_file())
@@ -143,6 +148,28 @@ class AccuWeatherProvider:
             self.save_cache(url, page_source)
         return page_source.decode('utf-8')
 
+    def run(self):
+        """ Run provider.
+        """
+
+        content = self.get_page_source(self.url)
+        return self.get_weather_info(content)
+
+
+class AccuWeatherProvider(WeatherProvider):
+
+    """ Weather provider for AccuWeather site.
+    """
+
+    name = config.ACCU_PROVIDER_NAME
+    title = config.ACCU_PROVIDER_TITLE
+
+    def get_default_location(self):
+        return config.DEFAULT_ACCU_LOCATION_NAME
+
+    def get_default_url(self):
+        return config.DEFAULT_ACCU_LOCATION_URL
+
     def get_locations(self, locations_url):
         """ Get list of available locations.
         """
@@ -207,15 +234,8 @@ class AccuWeatherProvider:
 
         return weather_info
 
-    def run(self):
-        """ Run provider.
-        """
 
-        content = self.get_page_source(self.url)
-        return self.get_weather_info(content)
-
-
-class RP5Provider:
+class RP5Provider(WeatherProvider):
 
     """ Provides weather info from rp5.ua site.
     """
@@ -223,134 +243,11 @@ class RP5Provider:
     name = config.RP5_PROVIDER_NAME
     title = config.RP5_PROVIDER_TITLE
 
-    default_location = config.DEFAULT_RP5_LOCATION_NAME
-    default_url = config.DEFAULT_RP5_LOCATION_URL
+    def get_default_location(self):
+        return config.DEFAULT_RP5_LOCATION_NAME
 
-    def __init__(self, app):
-        self.app = app
-
-        location, url = self._get_configuration()
-        self.location = location
-        self.url = url
-
-    def get_configuration_file(self):
-        """ Path to configuration file.
-
-        Returns path to configuration file in your home directory.
-        """
-
-        return Path.home() / config.CONFIG_FILE
-
-    def _get_configuration(self):
-        """ Returns configured location name and url.
-
-        Raise `ProviderConfigurationError` error if configuration is
-        broken or wasn't found.
-
-        :return: city name and url
-        :rtype: tuple
-        """
-
-        name = self.default_location
-        url = self.default_url
-        configuration = configparser.ConfigParser()
-
-        configuration.read(self.get_configuration_file())
-        if config.CONFIG_LOCATION in configuration.sections():
-            location_config = configuration[config.CONFIG_LOCATION]
-            name, url = location_config['name'], location_config['url']
-
-        return name, url
-
-    def save_configuration(self, name, url):
-        """ Save selected location to configuration file.
-
-        We don't want to configure provider each time we use
-        the application, thus we save preferred location in
-        configuration file.
-
-        :parma name: city name
-        :param type: str
-
-        :param url: Preferred location URL
-        :param type: str
-        """
-
-        parser = configparser.ConfigParser()
-        parser[config.CONFIG_LOCATION] = {'name': name, 'url': url}
-        with open(self.get_configuration_file(), 'w') as configfile:
-            parser.write(configfile)
-
-    def get_request_headers(self):
-        """ Return custom headers for url requests.
-        """
-
-        return {'User-Agent': config.FAKE_MOZILLA_AGENT}
-
-    def get_url_hash(self, url):
-        """ Generate url hash.
-        """
-
-        return hashlib.md5(url.encode('utf-8')).hexdigest()
-
-    def get_cache_directory(self):
-        """ Return home directory for cache files.
-        """
-
-        return Path.home() / config.CACHE_DIR
-
-    def is_valid(self, path):
-        """ Check if cache is valid.
-
-        Checks if cache file that corresponds to specified path
-        is not obsolete.
-        """
-
-        return time.time() - path.stat().st_mtime < config.CACHE_TIME
-
-    def get_cache(self, url):
-        """ Return cache by given url address if any.
-        """
-
-        cache = b''
-        cache_dir = self.get_cache_directory()
-        if cache_dir.exists():
-            cache_path = cache_dir / self.get_url_hash(url)
-            if cache_path.exists() and self.is_valid(cache_path):
-                with cache_path.open('rb') as cache_file:
-                    cache = cache_file.read()
-        return cache
-
-    def save_cache(self, url, page_source):
-        cache_dir = self.get_cache_directory()
-        if not cache_dir.exists():
-            cache_dir.mkdir(parents=True)
-
-        with (cache_dir / self.get_url_hash(url)).open('wb') as cache_file:
-            cache_file.write(page_source)
-
-    def get_page_source(self, url):
-        """ Gets page source by given url address.
-        """
-
-        cache = self.get_cache(url)
-        if cache and not self.app.options.refresh:
-            page_source = cache
-        else:
-            request = Request(url, headers=self.get_request_headers())
-            page_source = urlopen(request).read()
-            self.save_cache(url, page_source)
-        return page_source.decode('utf-8')
-
-    def get_locations(self, locations_url):
-        locations_page = self.get_page_source(locations_url)
-        soup = BeautifulSoup(locations_page, 'html.parser')
-        locations = []
-        for location in soup.find_all('li', attrs={'class': 'drilldown cl'}):
-            url = location.find('a').attrs['href']
-            location = location.find('em').text
-            locations.append((location, url))
-        return locations
+    def get_default_url(self):
+        return config.DEFAULT_RP5_LOCATION_URL
 
     def get_countries(self, countries_url):
         countries_page = self.get_page_source(countries_url)
@@ -418,9 +315,3 @@ class RP5Provider:
                     weather_info['wind'] = wind
 
         return weather_info
-
-    def run(self):
-        """ Run provider.
-        """
-        content = self.get_page_source(self.url)
-        return self.get_weather_info(content)
