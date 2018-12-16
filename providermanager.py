@@ -17,7 +17,7 @@ class ProviderManager:
         for provider in [AccuWeatherProvider, RP5Provider]:
             self.add(provider.name, provider)
 
-    def add(self, name,  provider):
+    def add(self, name, provider):
         """ Add provider.
         """
         self._providers[name] = provider
