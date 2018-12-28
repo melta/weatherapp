@@ -1,6 +1,7 @@
 import sys
 from argparse import ArgumentParser
 
+from commandmanager import CommandManager
 from providermanager import ProviderManager
 
 
@@ -12,6 +13,7 @@ class App:
     def __init__(self):
         self.arg_parser = self._arg_parser()
         self.providermanager = ProviderManager()
+        self.commandmanager = CommandManager()
 
     def _arg_parser(self):
         """ Initialize argument parser.
@@ -44,17 +46,21 @@ class App:
         self.options, remaining_args = self.arg_parser.parse_known_args(argv)
         command_name = self.options.command
 
+        if command_name in self.commandmanager:
+            command_factory = self.commandmanager.get(command_name)
+            return command_factory(self).run(remaining_args)
+
         if not command_name:
             # run all command providers by default
             for name, provider in self.providermanager._providers.items():
                 self.produce_output(provider.title,
                                     provider(self).location,
-                                    provider(self).run())
+                                    provider(self).run(remaining_args))
         elif command_name in self.providermanager:
             provider = self.providermanager[command_name](self)
             self.produce_output(provider.title,
                                 provider.location,
-                                provider.run())
+                                provider.run(remaining_args))
 
 
 def main(argv=sys.argv[1:]):
