@@ -135,13 +135,13 @@ class RP5Provider(WeatherProvider):
         """
         countries = self.get_countries(config.RP5_BROWSE_LOCATIONS)
         for index, country in enumerate(countries):
-            self.app.stdout.write(f'{index + 1}. {country[0]}\n')
+            print(f'{index + 1}. {country[0]}')
         selected_index = int(input('Please select country: '))
         country = countries[selected_index - 1]
 
         cities = self.get_cities(country[1])
         for index, city in enumerate(cities):
-            self.app.stdout.write(f'{index + 1}. {city[0]}\n')
+            print(f'{index + 1}. {city[0]}')
         selected_index = int(input('Please select city: '))
         city = cities[selected_index - 1]
         self.save_configuration(*city)
