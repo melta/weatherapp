@@ -18,6 +18,9 @@ class AccuWeatherProvider(WeatherProvider):
     name = config.ACCU_PROVIDER_NAME
     title = config.ACCU_PROVIDER_TITLE
 
+    def get_name(self):
+        return self.name
+
     def get_default_location(self):
         return config.DEFAULT_ACCU_LOCATION_NAME
 
@@ -97,6 +100,9 @@ class RP5Provider(WeatherProvider):
     name = config.RP5_PROVIDER_NAME
     title = config.RP5_PROVIDER_TITLE
 
+    def get_name(self):
+        return self.name
+
     def get_default_location(self):
         return config.DEFAULT_RP5_LOCATION_NAME
 
@@ -163,8 +169,8 @@ class RP5Provider(WeatherProvider):
                 temp = archive_info.find('span', class_='t_0')
                 if temp:
                     weather_info['temp'] = temp.text
-                wind = info_list[3].strip()[:info_list[3].find(')') + 1]
-                wind += info_list[4]
+                wind = info_list[2].strip()[:info_list[2].find(')') + 1]
+                wind += info_list[3]
                 if wind:
                     weather_info['wind'] = wind
 
