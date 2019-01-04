@@ -7,7 +7,8 @@ import hashlib
 import argparse
 import configparser
 from pathlib import Path
-from urllib.request import Request, urlopen
+
+import requests
 
 import config
 
@@ -198,8 +199,8 @@ class WeatherProvider(Command):
         if cache and not self.app.options.refresh:
             page_source = cache
         else:
-            request = Request(url, headers=self.get_request_headers())
-            page_source = urlopen(request).read()
+            page = requests.get(url, headers=self.get_request_headers())
+            page_source = page.content
             self.save_cache(url, page_source)
         return page_source.decode('utf-8')
 
