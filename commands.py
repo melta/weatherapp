@@ -20,7 +20,6 @@ class Configurate(Command):
         """ Run command.
         """
 
-        raise Exception
         parsed_args = self.get_parser().parse_args(argv)
         provider_name = parsed_args.provider
         provider_factory = self.app.providermanager.get(provider_name)
