@@ -1,7 +1,4 @@
-""" App commands
-"""
-
-from abstract import Command
+from weatherapp.core.abstract import Command
 
 
 class Configurate(Command):
@@ -24,18 +21,3 @@ class Configurate(Command):
         provider_name = parsed_args.provider
         provider_factory = self.app.providermanager.get(provider_name)
         provider_factory(self.app).configurate()
-
-
-class Providers(Command):
-
-    """ Print all available providers.
-    """
-
-    name = 'providers'
-
-    def run(self, argv):
-        """ Run command.
-        """
-
-        for name in self.app.providermanager._providers:
-            print(name)
