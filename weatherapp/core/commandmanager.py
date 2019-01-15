@@ -1,6 +1,6 @@
-from commands import Configurate, Providers
+from weatherapp.core.commands import Configurate, Providers
 
-import abstract
+from weatherapp.core import abstract
 
 
 class CommandManager(abstract.Manager):

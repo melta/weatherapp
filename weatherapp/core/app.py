@@ -2,9 +2,9 @@ import sys
 import logging
 from argparse import ArgumentParser
 
-import config
-from commandmanager import CommandManager
-from providermanager import ProviderManager
+from weatherapp.core import config
+from weatherapp.core.commandmanager import CommandManager
+from weatherapp.core.providermanager import ProviderManager
 
 
 class App:
@@ -98,7 +98,7 @@ class App:
 
         if not command_name:
             # run all command providers by default
-            for name, provider in self.providermanager._providers.items():
+            for name, provider in self.providermanager._commands.items():
                 self.produce_output(provider.title,
                                     provider(self).location,
                                     provider(self).run(remaining_args))

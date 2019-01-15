@@ -6,8 +6,8 @@ import urllib
 
 from bs4 import BeautifulSoup
 
-import config
-from abstract import WeatherProvider
+from weatherapp.core import config
+from weatherapp.core.abstract import WeatherProvider
 
 
 class AccuWeatherProvider(WeatherProvider):
