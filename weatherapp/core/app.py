@@ -142,20 +142,6 @@ class App:
             return self.run_provider(command_name, remaining_args)
 
 
-
-        if not command_name:
-            # run all command providers by default
-            for name, provider in self.providermanager._commands.items():
-                self.produce_output(provider.title,
-                                    provider(self).location,
-                                    provider(self).run(remaining_args))
-        elif command_name in self.providermanager:
-            provider = self.providermanager[command_name](self)
-            self.produce_output(provider.title,
-                                provider.location,
-                                provider.run(remaining_args))
-
-
 def main(argv=sys.argv[1:]):
     return App().run(argv)
 
