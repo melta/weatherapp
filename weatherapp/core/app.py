@@ -114,7 +114,7 @@ class App:
         """ Execute all available providers.
         """
 
-        for provider in self.providermanager._commands.values():
+        for name, provider in self.providermanager:
             provider = provider(self)
             self.produce_output(provider.title,
                                 provider.location,

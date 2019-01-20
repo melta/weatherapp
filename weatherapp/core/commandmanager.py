@@ -47,3 +47,7 @@ class CommandManager(abstract.Manager):
 
     def __contains__(self, name):
         return name in self._commands
+
+    def __iter__(self):
+        for key, value in self._commands.items():
+            yield (key, value)
