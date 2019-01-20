@@ -15,15 +15,6 @@ CACHE_DIR = '.wappcache'  # cache directory name
 CACHE_TIME = 300          # how long cache files are valid (in seconds)
 
 
-# AccuWeather provider related configuration
-ACCU_PROVIDER_NAME = 'accu'          # provider id
-ACCU_PROVIDER_TITLE = 'AccuWeather'  # provider title
-
-DEFAULT_ACCU_LOCATION_NAME = 'Lviv'
-DEFAULT_ACCU_LOCATION_URL = \
-    ('https://www.accuweather.com/uk/ua/lviv/324561/weather-forecast/324561')
-ACCU_BROWSE_LOCATIONS = 'https://www.accuweather.com/uk/browse-locations'
-
 # rp5.ua provider related configuration
 RP5_PROVIDER_NAME = 'rp5'          # provider id
 RP5_PROVIDER_TITLE = 'rp5.ua'      # provider title
