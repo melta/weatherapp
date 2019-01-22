@@ -27,7 +27,8 @@ class App:
         self.commandmanager = CommandManager()
         self.formatters = self._load_formatters()
 
-    def _arg_parser(self):
+    @staticmethod
+    def _arg_parser():
         """ Initialize argument parser.
         """
 
