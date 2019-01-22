@@ -12,5 +12,5 @@ class Providers(Command):
         """ Run command.
         """
 
-        for name in self.app.providermanager._providers:
-            print(name)
+        for provider in self.app.providermanager:
+            self.app.stdout.write(f"{provider[0]} \n")

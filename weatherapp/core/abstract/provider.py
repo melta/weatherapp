@@ -85,8 +85,9 @@ class WeatherProvider(Command):
         try:
             configuration.read(self.get_configuration_file())
         except configparser.Error:
-            print((f"Bad configuration file. "
-                   f"Please reconfigurate your provider: {self.get_name()}"))
+            self.app.write((
+                f"Bad configuration file. Please reconfigurate your provider: "
+                f"{self.get_name()}"))
 
         if self.get_name() in configuration.sections():
             location_config = configuration[self.get_name()]
