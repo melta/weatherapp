@@ -1,4 +1,6 @@
 import sys
+import configparser
+from pathlib import Path
 import logging
 from argparse import ArgumentParser
 
@@ -14,6 +16,11 @@ class App:
     """
 
     logger = logging.getLogger(__name__)
+
+    LOG_LEVEL_NAMES = {'WARNING': logging.WARNING,
+                       'INFO': logging.INFO,
+                       'DEBUG': logging.DEBUG}
+
     LOG_LEVEL_MAP = {0: logging.WARNING,
                      1: logging.INFO,
                      2: logging.DEBUG}
@@ -62,6 +69,10 @@ class App:
     def _load_formatters():
         return {'table': TableFormatter}
 
+    @staticmethod
+    def get_configuration_file():
+        return Path.home() / config.CONFIG_FILE
+
     def configure_logging(self):
         """ Create logging handlers for any log output.
         """
@@ -70,8 +81,24 @@ class App:
         root_logger.setLevel(logging.DEBUG)
 
         console = logging.StreamHandler()
-        console_level = self.LOG_LEVEL_MAP.get(self.options.verbose_level,
-                                               logging.WARNING)
+        console_level = logging.WARNING
+
+        configuration = configparser.ConfigParser()
+        try:
+            configuration.read(self.get_configuration_file())
+        except configparser.Error:
+            pass
+        else:
+            if 'App' in configuration.sections():
+                app_config = configuration['App']
+                log_level = app_config.get('log-level', '')
+                if log_level:
+                    console_level = self.LOG_LEVEL_NAMES.get(log_level,
+                                                             logging.WARNING)
+
+        if self.options.verbose_level:
+            console_level = self.LOG_LEVEL_MAP.get(self.options.verbose_level,
+                                                   logging.WARNING)
         console.setLevel(console_level)
         formatter = logging.Formatter(config.DEFAULT_MESSAGE_FORMAT)
         console.setFormatter(formatter)
@@ -90,6 +117,7 @@ class App:
     def run_command(self, name, argv):
         """ Run command
         """
+
         command = self.commandmanager.get(name)
         try:
             command(self).run(argv)
@@ -115,12 +143,12 @@ class App:
         """ Execute all available providers.
         """
 
+        self.logger.debug("Running all providers.")
         for name, provider in self.providermanager:
             provider = provider(self)
             self.produce_output(provider.title,
                                 provider.location,
                                 provider.run(argv))
-
 
     def run(self, argv):
         """ Run application.
